@@ -3,6 +3,7 @@
 interface Stat {
   label: string
   value: string | number
+  sub?: string
 }
 
 interface StatsBarProps {
@@ -18,7 +19,7 @@ export function StatsBar({ stats }: StatsBarProps) {
       {stats.map((stat) => (
         <div
           key={stat.label}
-          className="flex flex-col items-center py-4 px-3 rounded-xl gap-1"
+          className="flex flex-col items-center py-4 px-3 rounded-xl gap-0.5"
           style={{
             background: 'var(--card)',
             border: '1px solid var(--border)',
@@ -31,7 +32,12 @@ export function StatsBar({ stats }: StatsBarProps) {
           >
             {stat.value}
           </span>
-          <span className="text-xs text-muted-foreground font-sans mt-0.5">
+          {stat.sub && (
+            <span className="text-[10px] font-mono text-muted-foreground mt-0.5 leading-none">
+              {stat.sub}
+            </span>
+          )}
+          <span className="text-xs text-muted-foreground font-sans mt-1">
             {stat.label}
           </span>
         </div>

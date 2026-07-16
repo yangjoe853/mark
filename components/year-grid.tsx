@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { useI18n } from '@/lib/i18n-context'
 
 interface YearGridProps {
   checkedDays: Set<string>
@@ -12,6 +13,8 @@ function getDayKey(date: Date): string {
 }
 
 export function YearGrid({ checkedDays, todayKey }: YearGridProps) {
+  const { t } = useI18n()
+
   const days = useMemo(() => {
     const result: { key: string; isToday: boolean; isChecked: boolean; isFuture: boolean }[] = []
     const now = new Date()
@@ -38,7 +41,7 @@ export function YearGrid({ checkedDays, todayKey }: YearGridProps) {
         className="grid gap-[3px]"
         style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(9px, 1fr))' }}
         role="grid"
-        aria-label="全年打卡网格"
+        aria-label="Year check-in grid"
       >
         {days.map((day) => (
           <div
@@ -46,6 +49,7 @@ export function YearGrid({ checkedDays, todayKey }: YearGridProps) {
             role="gridcell"
             aria-label={day.key}
             aria-checked={day.isChecked}
+            title={day.key}
             className="aspect-square rounded-[3px] transition-all duration-500"
             style={{
               backgroundColor: day.isToday
@@ -64,10 +68,10 @@ export function YearGrid({ checkedDays, todayKey }: YearGridProps) {
       </div>
 
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-5">
-        <LegendItem color="oklch(0.72 0.14 68 / 0.18)" label="已过 · 未打" />
-        <LegendItem color="oklch(0.72 0.14 68 / 0.55)" label="已打卡" />
-        <LegendItem color="var(--muted)" label="未到" />
-        <LegendItem color="var(--mark)" label="今天" />
+        <LegendItem color="oklch(0.72 0.14 68 / 0.18)" label={t.legendPastMissed} />
+        <LegendItem color="oklch(0.72 0.14 68 / 0.55)" label={t.legendChecked} />
+        <LegendItem color="var(--muted)" label={t.legendFuture} />
+        <LegendItem color="var(--mark)" label={t.legendToday} />
       </div>
     </div>
   )
@@ -80,9 +84,7 @@ function LegendItem({ color, label }: { color: string; label: string }) {
         className="w-3 h-3 rounded-[3px] flex-shrink-0"
         style={{ backgroundColor: color }}
       />
-      <span className="text-xs text-muted-foreground font-sans">
-        {label}
-      </span>
+      <span className="text-xs text-muted-foreground font-sans">{label}</span>
     </div>
   )
 }

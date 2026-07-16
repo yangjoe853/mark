@@ -4,6 +4,8 @@ import { useState, useCallback, useMemo, useEffect } from 'react'
 import { MarkButton } from './mark-button'
 import { YearGrid } from './year-grid'
 import { StatsBar } from './stats-bar'
+import { useI18n } from '@/lib/i18n-context'
+import { type Locale, LOCALES, LOCALE_LABELS } from '@/lib/i18n'
 
 const STORAGE_KEY = 'mark_checked_days'
 
@@ -44,17 +46,13 @@ function calcLongestStreak(days: Set<string>): number {
     const prev = new Date(sorted[i - 1])
     const curr = new Date(sorted[i])
     const diff = (curr.getTime() - prev.getTime()) / 86400000
-    if (diff === 1) {
-      cur++
-      max = Math.max(max, cur)
-    } else {
-      cur = 1
-    }
+    if (diff === 1) { cur++; max = Math.max(max, cur) } else { cur = 1 }
   }
   return max
 }
 
 export function MarkPage() {
+  const { t, locale, setLocale } = useI18n()
   const todayKey = getTodayKey()
   const [checkedDays, setCheckedDays] = useState<Set<string>>(() => new Set())
   const [mounted, setMounted] = useState(false)
@@ -82,17 +80,25 @@ export function MarkPage() {
     (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000
   )
   const totalDays = today.getFullYear() % 4 === 0 ? 366 : 365
+  const yearProgress = Math.round((dayOfYear / totalDays) * 100)
+
+  // Locale-aware date display
+  const weekday = locale === 'zh'
+    ? today.toLocaleDateString('zh-CN', { weekday: 'long' })
+    : today.toLocaleDateString('en-US', { weekday: 'long' })
+  const dateStr = locale === 'zh'
+    ? today.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' })
+    : today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 
   const stats = [
-    { label: '累计打卡', value: checkedDays.size },
-    { label: '最长连续', value: longest },
-    { label: '今天是第', value: dayOfYear },
-    { label: '剩余天数', value: totalDays - dayOfYear },
+    { label: t.statTotal, value: checkedDays.size },
+    { label: t.statLongest, value: longest },
+    { label: t.statDayOfYear, value: `${dayOfYear}${t.statDayUnit}` },
+    { label: t.statRemaining, value: totalDays - dayOfYear },
   ]
 
-  const weekday = today.toLocaleDateString('zh-CN', { weekday: 'long' })
-  const dateStr = today.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' })
-  const yearProgress = Math.round((dayOfYear / totalDays) * 100)
+  // Card description lines
+  const descLines = t.cardDesc.split('\n')
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -100,36 +106,55 @@ export function MarkPage() {
       {/* ── Header ── */}
       <header className="fade-up border-b border-border bg-card/60 backdrop-blur-sm sticky top-0 z-20">
         <div className="max-w-6xl mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
+
           <div className="flex items-center gap-3">
             <span
               className="font-mono text-base font-medium tracking-[0.2em] uppercase"
               style={{ color: 'var(--mark)' }}
             >
-              MARK
+              {t.brand}
             </span>
             <span className="hidden sm:block text-sm text-muted-foreground font-sans">
               {weekday}，{dateStr}
             </span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {/* Year progress */}
-            <div className="hidden md:flex items-center gap-2.5">
+            <div className="hidden md:flex items-center gap-2.5" title={t.yearProgressLabel(yearProgress)}>
               <div
                 className="h-1.5 rounded-full overflow-hidden"
-                style={{ width: 100, background: 'var(--muted)' }}
+                style={{ width: 80, background: 'var(--muted)' }}
               >
                 <div
                   className="h-full rounded-full transition-all duration-700"
-                  style={{
-                    width: `${yearProgress}%`,
-                    background: 'var(--mark)',
-                  }}
+                  style={{ width: `${yearProgress}%`, background: 'var(--mark)' }}
                 />
               </div>
-              <span className="font-mono text-sm text-muted-foreground">
-                {yearProgress}%
-              </span>
+              <span className="font-mono text-sm text-muted-foreground">{yearProgress}%</span>
+            </div>
+
+            {/* Locale switcher */}
+            <div
+              className="flex items-center rounded-full overflow-hidden"
+              style={{ border: '1px solid var(--border)', background: 'var(--muted)' }}
+            >
+              {LOCALES.map((l: Locale) => (
+                <button
+                  key={l}
+                  onClick={() => setLocale(l)}
+                  className="px-3 py-1 text-xs font-mono transition-all duration-200"
+                  style={{
+                    background: locale === l ? 'var(--mark)' : 'transparent',
+                    color: locale === l ? 'white' : 'var(--muted-foreground)',
+                    fontWeight: locale === l ? '600' : '400',
+                  }}
+                  aria-pressed={locale === l}
+                  aria-label={`Switch to ${LOCALE_LABELS[l]}`}
+                >
+                  {LOCALE_LABELS[l]}
+                </button>
+              ))}
             </div>
 
             {/* Status badge */}
@@ -143,11 +168,11 @@ export function MarkPage() {
             >
               <span
                 className="w-2 h-2 rounded-full"
-                style={{
-                  background: isMarkedToday ? 'var(--mark)' : 'var(--border)',
-                }}
+                style={{ background: isMarkedToday ? 'var(--mark)' : 'var(--border)' }}
               />
-              {isMarkedToday ? '今日已打卡' : '尚未打卡'}
+              <span className="hidden sm:inline">
+                {isMarkedToday ? t.todayMarked : t.notMarked}
+              </span>
             </div>
           </div>
         </div>
@@ -168,11 +193,7 @@ export function MarkPage() {
               }}
             >
               {mounted ? (
-                <MarkButton
-                  isMarked={isMarkedToday}
-                  onMark={handleMark}
-                  streakCount={streak}
-                />
+                <MarkButton isMarked={isMarkedToday} onMark={handleMark} streakCount={streak} />
               ) : (
                 <div
                   className="w-36 h-36 rounded-full"
@@ -180,8 +201,14 @@ export function MarkPage() {
                 />
               )}
 
+              {/* Card description — the deep copy */}
               <p className="text-sm text-muted-foreground text-center leading-relaxed">
-                每天一次打卡<br />记录你的坚持
+                {descLines.map((line, i) => (
+                  <span key={i}>
+                    {line}
+                    {i < descLines.length - 1 && <br />}
+                  </span>
+                ))}
               </p>
             </div>
 
@@ -208,17 +235,17 @@ export function MarkPage() {
                     className="text-2xl font-semibold font-sans tracking-tight"
                     style={{ color: 'var(--foreground)' }}
                   >
-                    {new Date().getFullYear()} 年
+                    {t.gridYear(today.getFullYear())}
                   </h2>
-                  <p className="text-base text-muted-foreground mt-0.5">
-                    全年打卡记录
+                  <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                    {t.gridSub}
                   </p>
                 </div>
                 <span
                   className="font-mono text-base font-medium"
                   style={{ color: 'var(--mark)' }}
                 >
-                  {checkedDays.size} / {totalDays}
+                  {t.gridCount(checkedDays.size, totalDays)}
                 </span>
               </div>
 
@@ -226,7 +253,7 @@ export function MarkPage() {
 
               {/* Month strip */}
               <div className="mt-6">
-                <MonthStrip />
+                <MonthStrip months={t.months} />
               </div>
             </div>
           </div>
@@ -237,11 +264,11 @@ export function MarkPage() {
       {/* ── Footer ── */}
       <footer className="border-t border-border py-5">
         <div className="max-w-6xl mx-auto px-6 md:px-10 flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
-            每一天都算数
+          <span className="text-sm text-muted-foreground italic">
+            {t.footerTagline}
           </span>
           <span className="font-mono text-sm text-muted-foreground">
-            MARK · {new Date().getFullYear()}
+            {t.brand} · {today.getFullYear()}
           </span>
         </div>
       </footer>
@@ -249,25 +276,21 @@ export function MarkPage() {
   )
 }
 
-const MONTHS = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
-
-function MonthStrip() {
+function MonthStrip({ months }: { months: string[] }) {
   const currentMonth = new Date().getMonth()
   return (
     <div className="grid grid-cols-12 gap-1">
-      {MONTHS.map((m, i) => (
+      {months.map((m, i) => (
         <div key={m} className="flex flex-col items-center gap-1.5">
           <div
             className="w-full h-[2px] rounded-full"
             style={{
-              background: i <= currentMonth
-                ? 'var(--mark)'
-                : 'var(--border)',
-              opacity: i <= currentMonth ? (i === currentMonth ? 1 : 0.5) : 1,
+              background: i <= currentMonth ? 'var(--mark)' : 'var(--border)',
+              opacity: i <= currentMonth ? (i === currentMonth ? 1 : 0.45) : 1,
             }}
           />
           <span
-            className="font-mono text-[10px] tracking-wide"
+            className="font-mono text-[9px] tracking-wide"
             style={{
               color: i === currentMonth
                 ? 'var(--mark-hover)'
