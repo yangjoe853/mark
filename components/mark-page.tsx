@@ -183,7 +183,7 @@ export function MarkPage() {
         <div className="flex flex-col lg:flex-row gap-10 lg:gap-14 items-start">
 
           {/* ── Left: Mark action ── */}
-          <div className="w-full lg:w-72 xl:w-80 flex-shrink-0 fade-up" style={{ animationDelay: '0.05s' }}>
+          <div className="w-full max-w-[288px] mx-auto lg:mx-0 lg:w-72 flex-shrink-0 fade-up" style={{ animationDelay: '0.05s' }}>
             <div
               className="rounded-xl p-8 flex flex-col items-center gap-8"
               style={{
