@@ -219,7 +219,7 @@ export function MarkPage() {
           </div>
 
           {/* ── Right: Year grid ── */}
-          <div className="flex-1 min-w-0 fade-up" style={{ animationDelay: '0.2s' }}>
+          <div className="flex-1 w-full md:min-w-0 fade-up" style={{ animationDelay: '0.2s' }}>
             <div
               className="rounded-xl p-7 md:p-9"
               style={{
