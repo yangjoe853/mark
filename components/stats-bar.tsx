@@ -12,27 +12,26 @@ interface StatsBarProps {
 export function StatsBar({ stats }: StatsBarProps) {
   return (
     <div
-      className="w-full grid fade-up"
-      style={{
-        gridTemplateColumns: `repeat(${stats.length}, 1fr)`,
-        animationDelay: '0.2s',
-      }}
+      className="w-full grid grid-cols-2 gap-3 fade-up"
+      style={{ animationDelay: '0.2s' }}
     >
-      {stats.map((stat, i) => (
+      {stats.map((stat) => (
         <div
           key={stat.label}
-          className="flex flex-col items-center py-4 gap-1"
+          className="flex flex-col items-center py-4 px-3 rounded-xl gap-1"
           style={{
-            borderLeft: i > 0 ? '1px solid oklch(0.22 0 0)' : 'none',
+            background: 'var(--card)',
+            border: '1px solid var(--border)',
+            boxShadow: '0 1px 4px oklch(0.22 0.01 60 / 0.04)',
           }}
         >
           <span
-            className="font-mono text-xl md:text-2xl font-medium tracking-tight"
-            style={{ color: 'oklch(0.88 0.02 85)' }}
+            className="font-sans font-bold text-2xl leading-none"
+            style={{ color: 'var(--mark)' }}
           >
             {stat.value}
           </span>
-          <span className="font-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase">
+          <span className="text-xs text-muted-foreground font-sans mt-0.5">
             {stat.label}
           </span>
         </div>

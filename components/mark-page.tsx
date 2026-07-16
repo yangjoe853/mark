@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
-import { AmbientCanvas } from './ambient-canvas'
 import { MarkButton } from './mark-button'
 import { YearGrid } from './year-grid'
 import { StatsBar } from './stats-bar'
@@ -85,174 +84,196 @@ export function MarkPage() {
   const totalDays = today.getFullYear() % 4 === 0 ? 366 : 365
 
   const stats = [
-    { label: 'total', value: checkedDays.size },
-    { label: 'longest', value: longest },
-    { label: 'day', value: dayOfYear },
-    { label: 'remain', value: totalDays - dayOfYear },
+    { label: '累计打卡', value: checkedDays.size },
+    { label: '最长连续', value: longest },
+    { label: '今天是第', value: dayOfYear },
+    { label: '剩余天数', value: totalDays - dayOfYear },
   ]
 
-  const weekday = today.toLocaleDateString('en-US', { weekday: 'long' })
-  const dateStr = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
+  const weekday = today.toLocaleDateString('zh-CN', { weekday: 'long' })
+  const dateStr = today.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' })
+  const yearProgress = Math.round((dayOfYear / totalDays) * 100)
 
   return (
-    <div className="relative min-h-screen flex flex-col overflow-hidden">
-      <AmbientCanvas />
+    <div className="min-h-screen bg-background flex flex-col">
 
-      {/* ── Global header ── */}
-      <header
-        className="relative z-10 flex items-center justify-between px-8 md:px-12 lg:px-16 pt-8 pb-6 fade-up"
-        style={{ borderBottom: '1px solid oklch(0.18 0 0)' }}
-      >
-        <div className="flex items-center gap-4">
-          <h1
-            className="font-mono text-[11px] tracking-[0.35em] uppercase"
-            style={{ color: 'oklch(0.88 0.02 85)' }}
-          >
-            MARK
-          </h1>
-          <span
-            className="hidden sm:block font-mono text-[10px] tracking-[0.15em] text-muted-foreground"
-            style={{ borderLeft: '1px solid oklch(0.22 0 0)', paddingLeft: '1rem' }}
-          >
-            {weekday}, {dateStr}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-6">
-          {/* Year progress pill */}
-          <div className="hidden md:flex items-center gap-2">
-            <div
-              className="h-[3px] rounded-full overflow-hidden"
-              style={{ width: 120, background: 'oklch(0.18 0 0)' }}
+      {/* ── Header ── */}
+      <header className="fade-up border-b border-border bg-card/60 backdrop-blur-sm sticky top-0 z-20">
+        <div className="max-w-6xl mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span
+              className="font-mono text-base font-medium tracking-[0.2em] uppercase"
+              style={{ color: 'var(--mark)' }}
             >
-              <div
-                className="h-full rounded-full transition-all duration-700"
-                style={{
-                  width: `${(dayOfYear / totalDays) * 100}%`,
-                  background: 'oklch(0.88 0.02 85 / 0.5)',
-                }}
-              />
-            </div>
-            <span className="font-mono text-[10px] tracking-widest text-muted-foreground">
-              {Math.round((dayOfYear / totalDays) * 100)}%
+              MARK
+            </span>
+            <span className="hidden sm:block text-sm text-muted-foreground font-sans">
+              {weekday}，{dateStr}
             </span>
           </div>
 
-          {/* Status badge */}
-          <div
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-            style={{ border: '1px solid oklch(0.22 0 0)' }}
-          >
-            <span
-              className="w-1.5 h-1.5 rounded-full transition-all duration-400"
+          <div className="flex items-center gap-4">
+            {/* Year progress */}
+            <div className="hidden md:flex items-center gap-2.5">
+              <div
+                className="h-1.5 rounded-full overflow-hidden"
+                style={{ width: 100, background: 'var(--muted)' }}
+              >
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{
+                    width: `${yearProgress}%`,
+                    background: 'var(--mark)',
+                  }}
+                />
+              </div>
+              <span className="font-mono text-sm text-muted-foreground">
+                {yearProgress}%
+              </span>
+            </div>
+
+            {/* Status badge */}
+            <div
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-sans"
               style={{
-                background: isMarkedToday ? 'oklch(0.88 0.02 85)' : 'oklch(0.35 0 0)',
-                boxShadow: isMarkedToday ? '0 0 4px oklch(0.88 0.02 85 / 0.6)' : 'none',
+                background: isMarkedToday ? 'var(--mark-dim)' : 'var(--muted)',
+                color: isMarkedToday ? 'var(--mark-hover)' : 'var(--muted-foreground)',
+                border: `1px solid ${isMarkedToday ? 'var(--mark)' : 'var(--border)'}`,
               }}
-            />
-            <span className="font-mono text-[9px] tracking-widest text-muted-foreground uppercase">
-              {isMarkedToday ? 'done' : 'pending'}
-            </span>
+            >
+              <span
+                className="w-2 h-2 rounded-full"
+                style={{
+                  background: isMarkedToday ? 'var(--mark)' : 'var(--border)',
+                }}
+              />
+              {isMarkedToday ? '今日已打卡' : '尚未打卡'}
+            </div>
           </div>
         </div>
       </header>
 
-      {/* ── Main content ── */}
-      <main className="relative z-10 flex-1 flex flex-col lg:flex-row">
+      {/* ── Main ── */}
+      <main className="flex-1 max-w-6xl mx-auto w-full px-6 md:px-10 py-10 md:py-14">
+        <div className="flex flex-col lg:flex-row gap-10 lg:gap-14 items-start">
 
-        {/* ── Left panel: mark action ── */}
-        <div
-          className="flex flex-col items-center justify-center px-8 md:px-12 lg:px-16 py-12 lg:py-0 lg:min-h-0 lg:flex-1"
-          style={{ borderRight: 'none' }}
-        >
-          <div className="w-full max-w-xs lg:max-w-sm flex flex-col items-center gap-10">
-            {mounted ? (
-              <MarkButton
-                isMarked={isMarkedToday}
-                onMark={handleMark}
-                streakCount={streak}
-              />
-            ) : (
-              <div
-                className="w-44 h-44 rounded-full"
-                style={{ border: '1.5px solid oklch(0.22 0 0)' }}
-              />
-            )}
+          {/* ── Left: Mark action ── */}
+          <div className="w-full lg:w-72 xl:w-80 flex-shrink-0 fade-up" style={{ animationDelay: '0.05s' }}>
+            <div
+              className="rounded-xl p-8 flex flex-col items-center gap-8"
+              style={{
+                background: 'var(--card)',
+                border: '1px solid var(--border)',
+                boxShadow: '0 1px 8px oklch(0.22 0.01 60 / 0.06)',
+              }}
+            >
+              {mounted ? (
+                <MarkButton
+                  isMarked={isMarkedToday}
+                  onMark={handleMark}
+                  streakCount={streak}
+                />
+              ) : (
+                <div
+                  className="w-36 h-36 rounded-full"
+                  style={{ border: '2px solid var(--border)' }}
+                />
+              )}
 
-            <footer className="w-full text-center fade-up" style={{ animationDelay: '0.4s' }}>
-              <p className="font-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase">
-                One mark &middot; Every day &middot; This year
+              <p className="text-sm text-muted-foreground text-center leading-relaxed">
+                每天一次打卡<br />记录你的坚持
               </p>
-            </footer>
-          </div>
-        </div>
-
-        {/* ── Right panel: data ── */}
-        <div
-          className="flex flex-col gap-0 lg:w-[480px] xl:w-[560px] lg:border-l"
-          style={{ borderColor: 'oklch(0.18 0 0)' }}
-        >
-          {/* Stats row */}
-          <div style={{ borderBottom: '1px solid oklch(0.18 0 0)' }}>
-            {mounted && <StatsBar stats={stats} />}
-          </div>
-
-          {/* Year grid */}
-          <div className="flex-1 px-8 md:px-10 py-8 fade-up" style={{ animationDelay: '0.25s' }}>
-            <div className="mb-5 flex items-end justify-between">
-              <div>
-                <p
-                  className="font-mono text-[11px] tracking-[0.28em] uppercase mb-0.5"
-                  style={{ color: 'oklch(0.88 0.02 85)' }}
-                >
-                  {new Date().getFullYear()}
-                </p>
-                <p className="font-mono text-[10px] tracking-[0.15em] text-muted-foreground uppercase">
-                  Year in marks
-                </p>
-              </div>
-              <span className="font-mono text-[10px] tracking-widest text-muted-foreground">
-                {checkedDays.size} / {totalDays}
-              </span>
             </div>
-            {mounted && <YearGrid checkedDays={checkedDays} todayKey={todayKey} />}
+
+            {/* Stats cards */}
+            <div className="mt-4 fade-up" style={{ animationDelay: '0.15s' }}>
+              {mounted && <StatsBar stats={stats} />}
+            </div>
           </div>
 
-          {/* Month labels strip */}
-          <div
-            className="px-8 md:px-10 pb-8 fade-up"
-            style={{ animationDelay: '0.35s' }}
-          >
-            <MonthStrip />
+          {/* ── Right: Year grid ── */}
+          <div className="flex-1 min-w-0 fade-up" style={{ animationDelay: '0.2s' }}>
+            <div
+              className="rounded-xl p-7 md:p-9"
+              style={{
+                background: 'var(--card)',
+                border: '1px solid var(--border)',
+                boxShadow: '0 1px 8px oklch(0.22 0.01 60 / 0.06)',
+              }}
+            >
+              {/* Grid header */}
+              <div className="flex items-end justify-between mb-7">
+                <div>
+                  <h2
+                    className="text-2xl font-semibold font-sans tracking-tight"
+                    style={{ color: 'var(--foreground)' }}
+                  >
+                    {new Date().getFullYear()} 年
+                  </h2>
+                  <p className="text-base text-muted-foreground mt-0.5">
+                    全年打卡记录
+                  </p>
+                </div>
+                <span
+                  className="font-mono text-base font-medium"
+                  style={{ color: 'var(--mark)' }}
+                >
+                  {checkedDays.size} / {totalDays}
+                </span>
+              </div>
+
+              {mounted && <YearGrid checkedDays={checkedDays} todayKey={todayKey} />}
+
+              {/* Month strip */}
+              <div className="mt-6">
+                <MonthStrip />
+              </div>
+            </div>
           </div>
+
         </div>
       </main>
+
+      {/* ── Footer ── */}
+      <footer className="border-t border-border py-5">
+        <div className="max-w-6xl mx-auto px-6 md:px-10 flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            每一天都算数
+          </span>
+          <span className="font-mono text-sm text-muted-foreground">
+            MARK · {new Date().getFullYear()}
+          </span>
+        </div>
+      </footer>
     </div>
   )
 }
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const MONTHS = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
 
 function MonthStrip() {
   const currentMonth = new Date().getMonth()
   return (
     <div className="grid grid-cols-12 gap-1">
       {MONTHS.map((m, i) => (
-        <div key={m} className="flex flex-col items-center gap-1">
+        <div key={m} className="flex flex-col items-center gap-1.5">
           <div
-            className="w-full h-[1px]"
+            className="w-full h-[2px] rounded-full"
             style={{
               background: i <= currentMonth
-                ? 'oklch(0.88 0.02 85 / 0.3)'
-                : 'oklch(0.2 0 0)',
+                ? 'var(--mark)'
+                : 'var(--border)',
+              opacity: i <= currentMonth ? (i === currentMonth ? 1 : 0.5) : 1,
             }}
           />
           <span
-            className="font-mono text-[8px] tracking-wider uppercase"
+            className="font-mono text-[10px] tracking-wide"
             style={{
               color: i === currentMonth
-                ? 'oklch(0.88 0.02 85)'
-                : 'oklch(0.32 0 0)',
+                ? 'var(--mark-hover)'
+                : i < currentMonth
+                  ? 'var(--muted-foreground)'
+                  : 'var(--border)',
             }}
           >
             {m}

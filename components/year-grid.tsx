@@ -36,11 +36,9 @@ export function YearGrid({ checkedDays, todayKey }: YearGridProps) {
     <div className="w-full">
       <div
         className="grid gap-[3px]"
-        style={{
-          gridTemplateColumns: 'repeat(auto-fill, minmax(10px, 1fr))',
-        }}
+        style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(9px, 1fr))' }}
         role="grid"
-        aria-label="Year progress grid"
+        aria-label="全年打卡网格"
       >
         {days.map((day) => (
           <div
@@ -48,26 +46,28 @@ export function YearGrid({ checkedDays, todayKey }: YearGridProps) {
             role="gridcell"
             aria-label={day.key}
             aria-checked={day.isChecked}
-            className="aspect-square rounded-[2px] transition-all duration-500"
+            className="aspect-square rounded-[3px] transition-all duration-500"
             style={{
               backgroundColor: day.isToday
-                ? 'oklch(0.88 0.02 85)'
+                ? 'var(--mark)'
                 : day.isChecked
-                  ? 'oklch(0.88 0.02 85 / 0.7)'
+                  ? 'oklch(0.72 0.14 68 / 0.55)'
                   : day.isFuture
-                    ? 'oklch(0.16 0 0)'
-                    : 'oklch(0.26 0 0)',
-              boxShadow: day.isToday ? '0 0 6px oklch(0.88 0.02 85 / 0.5)' : 'none',
+                    ? 'var(--muted)'
+                    : 'oklch(0.72 0.14 68 / 0.18)',
+              boxShadow: day.isToday
+                ? '0 0 0 2px var(--background), 0 0 0 3px var(--mark)'
+                : 'none',
             }}
           />
         ))}
       </div>
 
-      <div className="flex items-center gap-4 mt-4">
-        <LegendItem color="oklch(0.26 0 0)" label="Missed" />
-        <LegendItem color="oklch(0.88 0.02 85 / 0.7)" label="Marked" />
-        <LegendItem color="oklch(0.16 0 0)" label="Ahead" />
-        <LegendItem color="oklch(0.88 0.02 85)" label="Today" />
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-5">
+        <LegendItem color="oklch(0.72 0.14 68 / 0.18)" label="已过 · 未打" />
+        <LegendItem color="oklch(0.72 0.14 68 / 0.55)" label="已打卡" />
+        <LegendItem color="var(--muted)" label="未到" />
+        <LegendItem color="var(--mark)" label="今天" />
       </div>
     </div>
   )
@@ -75,12 +75,12 @@ export function YearGrid({ checkedDays, todayKey }: YearGridProps) {
 
 function LegendItem({ color, label }: { color: string; label: string }) {
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-2">
       <div
-        className="w-2 h-2 rounded-[2px]"
+        className="w-3 h-3 rounded-[3px] flex-shrink-0"
         style={{ backgroundColor: color }}
       />
-      <span className="font-mono text-[9px] tracking-widest text-muted-foreground uppercase">
+      <span className="text-xs text-muted-foreground font-sans">
         {label}
       </span>
     </div>
