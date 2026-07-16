@@ -64,8 +64,8 @@ export function AmbientCanvas() {
 
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-        // warm off-white color matching --mark
-        ctx.fillStyle = `oklch(0.88 0.02 85 / ${p.opacity})`
+        // warm amber dots for light background
+        ctx.fillStyle = `oklch(0.72 0.14 68 / ${p.opacity * 0.4})`
         ctx.fill()
       }
 
@@ -79,7 +79,7 @@ export function AmbientCanvas() {
             ctx.beginPath()
             ctx.moveTo(particles[i].x, particles[i].y)
             ctx.lineTo(particles[j].x, particles[j].y)
-            ctx.strokeStyle = `oklch(0.88 0.02 85 / ${0.04 * (1 - dist / 100)})`
+            ctx.strokeStyle = `oklch(0.72 0.14 68 / ${0.06 * (1 - dist / 100)})`
             ctx.lineWidth = 0.5
             ctx.stroke()
           }

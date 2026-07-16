@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import { useI18n } from '@/lib/i18n-context'
 
 interface YearGridProps {
   checkedDays: Set<string>
@@ -12,6 +13,8 @@ function getDayKey(date: Date): string {
 }
 
 export function YearGrid({ checkedDays, todayKey }: YearGridProps) {
+  const { t } = useI18n()
+
   const days = useMemo(() => {
     const result: { key: string; isToday: boolean; isChecked: boolean; isFuture: boolean }[] = []
     const now = new Date()
@@ -36,11 +39,9 @@ export function YearGrid({ checkedDays, todayKey }: YearGridProps) {
     <div className="w-full">
       <div
         className="grid gap-[3px]"
-        style={{
-          gridTemplateColumns: 'repeat(auto-fill, minmax(10px, 1fr))',
-        }}
+        style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(9px, 1fr))' }}
         role="grid"
-        aria-label="Year progress grid"
+        aria-label="Year check-in grid"
       >
         {days.map((day) => (
           <div
@@ -48,26 +49,29 @@ export function YearGrid({ checkedDays, todayKey }: YearGridProps) {
             role="gridcell"
             aria-label={day.key}
             aria-checked={day.isChecked}
-            className="aspect-square rounded-[2px] transition-all duration-500"
+            title={day.key}
+            className="aspect-square rounded-[3px] transition-all duration-500"
             style={{
               backgroundColor: day.isToday
-                ? 'oklch(0.88 0.02 85)'
+                ? 'var(--mark)'
                 : day.isChecked
-                  ? 'oklch(0.88 0.02 85 / 0.7)'
+                  ? 'oklch(0.72 0.14 68 / 0.55)'
                   : day.isFuture
-                    ? 'oklch(0.16 0 0)'
-                    : 'oklch(0.26 0 0)',
-              boxShadow: day.isToday ? '0 0 6px oklch(0.88 0.02 85 / 0.5)' : 'none',
+                    ? 'var(--muted)'
+                    : 'oklch(0.72 0.14 68 / 0.18)',
+              boxShadow: day.isToday
+                ? '0 0 0 2px var(--background), 0 0 0 3px var(--mark)'
+                : 'none',
             }}
           />
         ))}
       </div>
 
-      <div className="flex items-center gap-4 mt-4">
-        <LegendItem color="oklch(0.26 0 0)" label="Missed" />
-        <LegendItem color="oklch(0.88 0.02 85 / 0.7)" label="Marked" />
-        <LegendItem color="oklch(0.16 0 0)" label="Ahead" />
-        <LegendItem color="oklch(0.88 0.02 85)" label="Today" />
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-5">
+        <LegendItem color="oklch(0.72 0.14 68 / 0.18)" label={t.legendPastMissed} />
+        <LegendItem color="oklch(0.72 0.14 68 / 0.55)" label={t.legendChecked} />
+        <LegendItem color="var(--muted)" label={t.legendFuture} />
+        <LegendItem color="var(--mark)" label={t.legendToday} />
       </div>
     </div>
   )
@@ -75,14 +79,12 @@ export function YearGrid({ checkedDays, todayKey }: YearGridProps) {
 
 function LegendItem({ color, label }: { color: string; label: string }) {
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-2">
       <div
-        className="w-2 h-2 rounded-[2px]"
+        className="w-3 h-3 rounded-[3px] flex-shrink-0"
         style={{ backgroundColor: color }}
       />
-      <span className="font-mono text-[9px] tracking-widest text-muted-foreground uppercase">
-        {label}
-      </span>
+      <span className="text-xs text-muted-foreground font-sans">{label}</span>
     </div>
   )
 }

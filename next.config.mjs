@@ -6,6 +6,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Silence the Turbopack/webpack warning — no custom webpack config needed
+  turbopack: {},
 }
 
 export default nextConfig
